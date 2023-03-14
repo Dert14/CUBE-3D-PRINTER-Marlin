@@ -1,0 +1,17 @@
+# Marlin Build
+
+image: shaguarger/platformio:latest
+
+pipelines:
+  branches:
+    2.0.x-*:
+      - step:
+          name: 'Build'
+          script:
+            - platformio run
+          artifacts:
+            - .pio/build/*/firmware.bin
+      - step:
+          name: 'Upload'
+          script:
+            - curl -X POST "https://${BITBUCKET_USERNAME}:${BITBUCKET_APP_PASSWORD}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form "files=@`ls .pio/build/*/firmware.bin | tr -d \"\n\"`;filename=`git rev-parse --abbrev-ref HEAD`-${BITBUCKET_COMMIT}-`date +%Y%m%d%H%M`.bin"
